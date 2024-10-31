@@ -1,0 +1,9 @@
+[submodule "safe-smart-account"]
+	path = safe-smart-account
+	url = https://github.com/safe-global/safe-smart-account.git
+[submodule "safe-transaction-service"]
+	path = safe-transaction-service
+	url = https://github.com/safe-global/safe-transaction-service.git
+[submodule "safe-client-gateway"]
+	path = safe-client-gateway
+	url = https://github.com/safe-global/safe-client-gateway.git

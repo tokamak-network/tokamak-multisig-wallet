@@ -1,3 +1,6 @@
 # tokamak-multisig-wallet
 
-test commit push
+install
+
+git submodule init
+git submodule update
