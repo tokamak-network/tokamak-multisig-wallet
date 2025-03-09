@@ -100,11 +100,27 @@ describe("MultiSigWallet Test", function () {
       );
 
       await MultiSigWalletContract.connect(owner2).confirmTransaction(1)
-      await MultiSigWalletContract.connect(owner3).confirmTransaction(1)
+      // await MultiSigWalletContract.connect(owner3).confirmTransaction(1)
 
       await MultiSigWalletContract.connect(owner3).executeTransaction(1)
 
       expect(await testTokenContract.balanceOf(addr1.address)).to.be.equal(tokenAmount)
+    })
+
+    it("ConfirmTransaction cannot be executed for a Transaction that has already been executeTransactioned.", async () => {
+      await expect(
+        MultiSigWalletContract.connect(owner3).confirmTransaction(
+          1
+        )
+      ).to.be.revertedWith("tx already executed");
+    })
+
+    it("executeTransaction cannot be executed for a Transaction that has already been executeTransactioned.", async () => {
+      await expect(
+        MultiSigWalletContract.connect(owner3).executeTransaction(
+          1
+        )
+      ).to.be.revertedWith("tx already executed");
     })
     
     it("can't changeOwner by Owner", async () => {
@@ -167,6 +183,45 @@ describe("MultiSigWallet Test", function () {
       ).to.be.revertedWith("not owner");
     })
 
+    it("revokeConfirmation Test", async () => {
+      const recipient = owner1.address;
+      const ethAmount = parseEther("1");
+      
+      await MultiSigWalletContract.connect(addr1).submitTransaction(
+        recipient,
+        ethAmount,
+        "0x"
+      );
+
+      let count = Number(await MultiSigWalletContract.getTransactionCount())
+      let beforeInfo = await MultiSigWalletContract.getTransaction(count-1)
+      expect(Number(beforeInfo.numConfirmations)).to.be.equal(1)
+
+      await MultiSigWalletContract.connect(addr1).revokeConfirmation(count-1)
+      let afterInfo = await MultiSigWalletContract.getTransaction(count-1)
+      expect(Number(afterInfo.numConfirmations)).to.be.equal(0)
+    })
+
+    it("executeTransaction cannot be executed if the numConfirmationsRequired value is not exceeded.", async () => {
+      let count = Number(await MultiSigWalletContract.getTransactionCount())
+      await MultiSigWalletContract.connect(owner2).confirmTransaction(count-1)
+
+      await expect(
+        MultiSigWalletContract.connect(addr1).executeTransaction(
+          count-1
+        )
+      ).to.be.revertedWith("cannot execute tx");
+    })
+
+    it("The same Owner cannot execute a confirmTransaction again for an index on which a confirmTransaction was executed.", async () => {
+      let count = Number(await MultiSigWalletContract.getTransactionCount())
+
+      await expect(
+        MultiSigWalletContract.connect(owner2).confirmTransaction(
+          count-1
+        )
+      ).to.be.revertedWith("tx already confirmed");
+    })
   })
 
 
