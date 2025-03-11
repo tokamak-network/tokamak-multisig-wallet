@@ -14,10 +14,14 @@ contract MultiSigWallet {
     );
     event ConfirmTransaction(address indexed owner, uint indexed txIndex);
     event RevokeConfirmation(address indexed owner, uint indexed txIndex);
-    event ExecuteTransaction(address indexed owner, uint indexed txIndex);
+    event ExecuteTransaction(
+        address indexed owner, 
+        uint indexed txIndex,
+        bool success
+    );
 
     event ChangeOwner(
-        address indexed sender,
+        address indexed oldOwner,
         uint indexed ownerIndex, 
         address indexed newOwner
     );
@@ -100,7 +104,7 @@ contract MultiSigWallet {
         isOwner[_newOwner] = true;
         owners[_index] = _newOwner;
         
-        emit ChangeOwner(msg.sender, _index, _newOwner);
+        emit ChangeOwner(owners[_index], _index, _newOwner);
     }
 
     function submitTransaction(
@@ -109,6 +113,9 @@ contract MultiSigWallet {
         bytes memory _data
     ) public onlyOwner nonZeroAddress(_to) {
         require(_data.length != 0 || _value != 0, "invalid data");
+        if(_value > 0) {
+            require(address(this).balance > 0, "dont have ETH");
+        }
         uint txIndex = transactions.length;
 
         transactions.push(
@@ -141,7 +148,6 @@ contract MultiSigWallet {
         uint _txIndex
     ) public onlyOwner txExists(_txIndex) notExecuted(_txIndex) {
         Transaction storage transaction = transactions[_txIndex];
-
         require(
             transaction.numConfirmations >= numConfirmationsRequired,
             "cannot execute tx"
@@ -152,11 +158,11 @@ contract MultiSigWallet {
         (bool success, ) = transaction.to.call{value: transaction.value}(
             transaction.data
         );
-        require(success, "tx failed");
 
-        emit ExecuteTransaction(msg.sender, _txIndex);
+        emit ExecuteTransaction(msg.sender, _txIndex, success);
     }
 
+ 
     function revokeConfirmation(
         uint _txIndex
     ) public onlyOwner txExists(_txIndex) notExecuted(_txIndex) {
