@@ -2,6 +2,7 @@
 pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "hardhat/console.sol";
 
 contract MultiSigWallet {
 
@@ -158,6 +159,8 @@ contract MultiSigWallet {
         (bool success, ) = transaction.to.call{value: transaction.value}(
             transaction.data
         );
+        console.log("MultiSig");
+        console.log(success);
 
         emit ExecuteTransaction(msg.sender, _txIndex, success);
     }

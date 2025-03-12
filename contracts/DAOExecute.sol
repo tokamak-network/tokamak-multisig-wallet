@@ -2,6 +2,7 @@
 pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "hardhat/console.sol";
 
 contract DAOExecute {
 
@@ -22,21 +23,20 @@ contract DAOExecute {
         _;
     }
 
-    constructor(address[] memory _owners) {
-        for (uint i = 0; i < _owners.length; i++) {
-            address owner = _owners[i];
+    constructor(address _owner) {
+        require(_owner != address(0), "invalid owner");
+        isOwner[_owner] = true;
+        owners.push(_owner);
 
-            require(owner != address(0), "invalid owner");
-            require(!isOwner[owner], "owner not unique");
-
-            isOwner[owner] = true;
-            owners.push(owner);
-        }
+        isOwner[address(this)] = true;
+        owners.push(address(this));
     }
 
     receive() external payable {}
     
-    function setCandidateAddOnFactory(address _candidateAddOnFactory)
+    function setCandidateAddOnFactory(
+        address _candidateAddOnFactory
+    )
         external
         onlyOwner
     {
@@ -63,6 +63,8 @@ contract DAOExecute {
         (bool success, ) = address(_to).call{value: _value}(
             _data
         );
+        console.log("DAOExecute");
+        console.log(success);
 
         emit DAOExecuteTransaction(_to,_data,success);
     }  

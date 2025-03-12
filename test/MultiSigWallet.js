@@ -23,6 +23,12 @@ describe("MultiSigWallet Test", function () {
   let testTokenContract;
   let testTokenContractAddr;
 
+  let daoExecute;
+  let daoExecuteContract;
+  let daoExecuteContractAddr;
+
+  let zeroAddr = "0x0000000000000000000000000000000000000000"
+
   before('create account', async () => {
     [owner1, owner2, owner3, addr1] = await ethers.getSigners();
     // console.log(owner1.address)
@@ -48,6 +54,15 @@ describe("MultiSigWallet Test", function () {
 
       await testTokenContract.waitForDeployment();
       testTokenContractAddr = await testTokenContract.getAddress()
+    })
+
+    it("Deploy the DAOExecute", async () => {
+      let daoOwners = [MultiSigWalletContractAddr, ]
+      daoExecute = await ethers.getContractFactory("DAOExecute");
+      daoExecuteContract = await daoExecute.deploy(MultiSigWalletContractAddr);
+
+      await daoExecuteContract.waitForDeployment();
+      daoExecuteContractAddr = await daoExecuteContract.getAddress()
     })
   });
 
@@ -222,6 +237,61 @@ describe("MultiSigWallet Test", function () {
         )
       ).to.be.revertedWith("tx already confirmed");
     })
+  })
+
+  describe("DAOExecute Test", function () {
+    it("MultiSigWallet can execute DAOExecuteContract", async () => {
+      let beforeCandidateFactoryAddr = await daoExecuteContract.candidateAddOnFactory()
+      expect(beforeCandidateFactoryAddr).to.be.equal(zeroAddr)
+
+      const dataSetCandidateAddOnFactory = daoExecuteContract.interface.encodeFunctionData(
+        "setCandidateAddOnFactory",
+        [addr1.address]
+      )
+        
+      const dataExecuteTransaction = daoExecuteContract.interface.encodeFunctionData(
+        "executeTransaction",
+        [daoExecuteContractAddr, 0, dataSetCandidateAddOnFactory]
+      )
+      // console.log("dataSetCandidateAddOnFactory : ", dataSetCandidateAddOnFactory)
+      // console.log("dataExecuteTransaction : ", dataExecuteTransaction)
+
+      await MultiSigWalletContract.connect(owner2).submitTransaction(
+        daoExecuteContractAddr,
+        0,
+        dataExecuteTransaction
+      );
+
+      let count = Number(await MultiSigWalletContract.getTransactionCount())
+      await MultiSigWalletContract.connect(owner3).confirmTransaction(count-1)
+      await MultiSigWalletContract.connect(owner3).executeTransaction(count-1)
+
+      let afterCandidateFactoryAddr = await daoExecuteContract.candidateAddOnFactory()
+      expect(afterCandidateFactoryAddr).to.be.equal(addr1.address)
+    })
+
+    it("MultiSigWallet can execute setLayer2Manager", async () => {
+      let beforelayer2ManagerAddr = await daoExecuteContract.layer2Manager()
+      expect(beforelayer2ManagerAddr).to.be.equal(zeroAddr)
+      const dataSetLayer2Manager = daoExecuteContract.interface.encodeFunctionData(
+        "setLayer2Manager",
+        [addr1.address]
+      )
+
+      await MultiSigWalletContract.connect(owner2).submitTransaction(
+        daoExecuteContractAddr,
+        0,
+        dataSetLayer2Manager
+      );
+
+      let count = Number(await MultiSigWalletContract.getTransactionCount())
+      await MultiSigWalletContract.connect(owner3).confirmTransaction(count-1)
+      await MultiSigWalletContract.connect(owner3).executeTransaction(count-1)
+
+      let afterlayer2ManagerAddr = await daoExecuteContract.layer2Manager()
+      expect(afterlayer2ManagerAddr).to.be.equal(addr1.address)
+    })
+
   })
 
 
