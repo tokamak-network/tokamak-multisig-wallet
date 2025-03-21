@@ -2,10 +2,17 @@
 pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "hardhat/console.sol";
 
 contract MultiSigWallet {
 
+    /**
+     * @notice Event that occurs when the submitTransaction function is executed
+     * @param owner     Address where the submitTransaction function was executed
+     * @param txIndex   Index generated from submitTransaction function
+     * @param to        Execution destination of the submitTransaction function
+     * @param value     value of eth used in the submitTransaction function
+     * @param data      Data containing the function to be executed in the submitTransaction function
+     */
     event SubmitTransaction(
         address indexed owner,
         uint indexed txIndex,
@@ -13,14 +20,45 @@ contract MultiSigWallet {
         uint value,
         bytes data
     );
-    event ConfirmTransaction(address indexed owner, uint indexed txIndex);
-    event RevokeConfirmation(address indexed owner, uint indexed txIndex);
+
+    /**
+     * @notice Event that occurs when the confirmTransaction function is executed
+     * @param owner     Address where the confirmTransaction function was executed
+     * @param txIndex   This is the index number confirmed in the confirmTransaction function.
+     */
+    event ConfirmTransaction(
+        address indexed owner, 
+        uint indexed txIndex
+    );
+
+    /**
+     * @notice Event that occurs when the revokeConfirmation function is executed
+     * @param owner     Address where the revokeConfirmation function was executed
+     * @param txIndex   This is the index number revoked in the revokeConfirmation function.
+     */
+    event RevokeConfirmation(
+        address indexed owner, 
+        uint indexed txIndex
+    );
+
+    /**
+     * @notice Event that occurs when the executeTransaction function is executed
+     * @param owner     Address where the executeTransaction function was executed
+     * @param txIndex   Address where the executeTransaction function was executed
+     * @param success   Returns whether the executeTransaction function succeeded or not.
+     */
     event ExecuteTransaction(
         address indexed owner, 
         uint indexed txIndex,
         bool success
     );
 
+    /**
+     * @notice Event that occurs when the changeOwner function is executed
+     * @param oldOwner     Previous Owner Address where owner is change
+     * @param ownerIndex   Index whose owner has change
+     * @param newOwner     New Owner Address
+     */    
     event ChangeOwner(
         address indexed oldOwner,
         uint indexed ownerIndex, 
@@ -78,6 +116,7 @@ contract MultiSigWallet {
         require(addr != address(0), "zero address");
         _;
     }
+    
 
     constructor(address[] memory _owners) {
         require(_owners.length == 3 && _owners.length >= numConfirmationsRequired, "invalid number of owners");
@@ -93,8 +132,12 @@ contract MultiSigWallet {
         }
     }
 
+    /// @notice This Contract can receive ETH.
     receive() external payable {}
 
+    /// @notice This is a function that changes the owner.
+    /// @param _index    Owner index to change
+    /// @param _newOwner New Owner Address
     function changeOwner(
         uint _index,
         address _newOwner
@@ -108,6 +151,10 @@ contract MultiSigWallet {
         emit ChangeOwner(owners[_index], _index, _newOwner);
     }
 
+    /// @notice Submit a transaction to be executed on the Contract
+    /// @param _to    Address to execute transaction
+    /// @param _value Amount of ether to send _to
+    /// @param _data  Transaction data to be executed in _to 
     function submitTransaction(
         address _to,
         uint _value,
@@ -135,6 +182,8 @@ contract MultiSigWallet {
         emit SubmitTransaction(msg.sender, txIndex, _to, _value, _data);
     }
 
+    /// @notice confirm transaction execution on index
+    /// @param _txIndex Transaction index to confirm
     function confirmTransaction(
         uint _txIndex
     ) public onlyOwner txExists(_txIndex) notExecuted(_txIndex) notConfirmed(_txIndex) {
@@ -145,6 +194,8 @@ contract MultiSigWallet {
         emit ConfirmTransaction(msg.sender, _txIndex);
     }
 
+    /// @notice Execute transaction for index
+    /// @param _txIndex Transaction index to execute
     function executeTransaction(
         uint _txIndex
     ) public onlyOwner txExists(_txIndex) notExecuted(_txIndex) {
@@ -159,13 +210,13 @@ contract MultiSigWallet {
         (bool success, ) = transaction.to.call{value: transaction.value}(
             transaction.data
         );
-        console.log("MultiSig");
-        console.log(success);
 
         emit ExecuteTransaction(msg.sender, _txIndex, success);
     }
 
- 
+    
+    /// @notice Revoke transaction execution on index
+    /// @param _txIndex Transaction index to revoke
     function revokeConfirmation(
         uint _txIndex
     ) public onlyOwner txExists(_txIndex) notExecuted(_txIndex) {
@@ -179,14 +230,25 @@ contract MultiSigWallet {
         emit RevokeConfirmation(msg.sender, _txIndex);
     }
 
+    /// @notice Function to get owners' addresses
+    /// @return owners address
     function getOwners() public view returns (address[] memory) {
         return owners;
     }
 
+    /// @notice Function to get transaction length
+    /// @return Return transaction length
     function getTransactionCount() public view returns (uint) {
         return transactions.length;
     }
 
+    /// @notice Function to get transaction information
+    /// @param _txIndex Transaction index
+    /// @return to Address to execute transaction
+    /// @return value Amount of Ether to send in the transaction
+    /// @return data to be executed in the transaction
+    /// @return executed Whether the transaction was executed
+    /// @return numConfirmations Amount of transactions confirmed
     function getTransaction(
         uint _txIndex
     )
