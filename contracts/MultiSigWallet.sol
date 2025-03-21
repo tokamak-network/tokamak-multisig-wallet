@@ -65,11 +65,17 @@ contract MultiSigWallet {
         address indexed newOwner
     );
 
+
+    //owners address
     address[] public owners;
+
+    //Check if the owner is correct
     mapping(address => bool) public isOwner;
 
+    //Number of confirmations to execute the transaction
     uint public constant numConfirmationsRequired = 2;
 
+    //Information about the transaction
     struct Transaction {
         address to;
         uint value;
@@ -80,6 +86,8 @@ contract MultiSigWallet {
 
     // mapping from tx index => owner => bool
     mapping(uint => mapping(address => bool)) public isConfirmed;
+
+    // transaction index => struct
     Transaction[] public transactions;
 
     modifier onlyMultiSig() {
