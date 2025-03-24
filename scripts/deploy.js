@@ -16,3 +16,11 @@ async function main() {
     const deployedAddress = await multiSigWallet.getAddress()
     console.log("MultiSigWallet deployed at:", deployedAddress)
 }
+
+
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
