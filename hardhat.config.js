@@ -15,11 +15,12 @@ module.exports = {
     mainnet: {
       url: `${process.env.ETH_NODE_URI_MAINNET}`,
       accounts: [`${process.env.PRIVATE_KEY}`],
-      gasPrice: 50000000000,
+      gasPrice: 500000000,
     },
     sepolia: {
       url: `${process.env.ETH_NODE_URI_sepolia}`,
       accounts: [`${process.env.PRIVATE_KEY}`],
+      gasPrice: 500000000,    //0.5 Gwei
     },
   },
   etherscan: {

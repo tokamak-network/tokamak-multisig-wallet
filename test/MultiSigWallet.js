@@ -292,6 +292,16 @@ describe("MultiSigWallet Test", function () {
       expect(afterlayer2ManagerAddr).to.be.equal(addr1.address)
     })
 
+    // it("MultiSigWallet get revokeData", async () => {
+    //   let adminRole = "0x0000000000000000000000000000000000000000000000000000000000000000"
+    //   let address = "0xB4983DA083A5118C903910DB4f5a480B1D9f3687"
+    //   const dataRevokeRole = daoExecuteContract.interface.encodeFunctionData(
+    //     "revokeRole",
+    //     [adminRole,address]
+    //   )
+    //   console.log(dataRevokeRole)
+    // })
+
   })
 
 
