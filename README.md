@@ -353,3 +353,228 @@ await MultiSigWalletContract.connect(owner).submitTransaction(
 );
 
 ```
+
+### 14. DAOCommitteeOwner setActivityRewardPerSecond
+```
+const MultiSigWalletContract = new ethers.Contract(
+    MultiSigWalletContractAddr,
+    MultiSigWallet_ABI.abi,
+    provider
+)
+
+const DAOCommitteeOwner = await ethers.Contract(
+  DAOCommitteeProxyAddr,
+  DAOCommittee_Owner_ABI.abi,
+  provider
+);
+
+const dataSetActivityRewardPerSecond = DAOCommitteeOwner.interface.encodeFunctionData(
+    "setActivityRewardPerSecond",
+    [31709791983764] // Setting the DAO Member Reward Amount per Second
+)
+
+await MultiSigWalletContract.connect(owner).submitTransaction(
+    DAOCommitteeProxyAddr,
+    0,
+    dataSetActivityRewardPerSecond
+);
+
+```
+
+### 15. DAOCommitteeOwner setBurntAmountAtDAO
+```
+const MultiSigWalletContract = new ethers.Contract(
+    MultiSigWalletContractAddr,
+    MultiSigWallet_ABI.abi,
+    provider
+)
+
+const DAOCommitteeOwner = await ethers.Contract(
+  DAOCommitteeProxyAddr,
+  DAOCommittee_Owner_ABI.abi,
+  provider
+);
+
+const dataSetBurntAmountAtDAO = DAOCommitteeOwner.interface.encodeFunctionData(
+    "setBurntAmountAtDAO",
+    [ethers.utils.parseEther("1000")] // Set the amount of tokens to burn in the SeigManager
+)
+
+await MultiSigWalletContract.connect(owner).submitTransaction(
+    DAOCommitteeProxyAddr,
+    0,
+    dataSetBurntAmountAtDAO
+);
+
+```
+
+### 16. DAOCommitteeOwner setCandidatesCommittee
+```
+const MultiSigWalletContract = new ethers.Contract(
+    MultiSigWalletContractAddr,
+    MultiSigWallet_ABI.abi,
+    provider
+)
+
+const DAOCommitteeOwner = await ethers.Contract(
+  DAOCommitteeProxyAddr,
+  DAOCommittee_Owner_ABI.abi,
+  provider
+);
+
+const candidateContracts = [candidate1Addr, candidate2Addr, candidate3Addr];
+const committeeAddr = "0x..."; //  New DAOCommitteeProxy contract address
+
+const dataSetCandidatesCommittee = DAOCommitteeOwner.interface.encodeFunctionData(
+    "setCandidatesCommittee",
+    [candidateContracts, committeeAddr]
+)
+
+await MultiSigWalletContract.connect(owner).submitTransaction(
+    DAOCommitteeProxyAddr,
+    0,
+    dataSetCandidatesCommittee
+);
+
+```
+
+### 17. DAOCommitteeOwner setCandidatesSeigManager
+```
+const MultiSigWalletContract = new ethers.Contract(
+    MultiSigWalletContractAddr,
+    MultiSigWallet_ABI.abi,
+    provider
+)
+
+const DAOCommitteeOwner = await ethers.Contract(
+  DAOCommitteeProxyAddr,
+  DAOCommittee_Owner_ABI.abi,
+  provider
+);
+
+const candidateContracts = [candidate1Addr, candidate2Addr, candidate3Addr];
+const seigManagerAddr = "0x..."; // New SeigManager Address
+
+const dataSetCandidatesSeigManager = DAOCommitteeOwner.interface.encodeFunctionData(
+    "setCandidatesSeigManager",
+    [candidateContracts, seigManagerAddr]
+)
+
+await MultiSigWalletContract.connect(owner).submitTransaction(
+    DAOCommitteeProxyAddr,
+    0,
+    dataSetCandidatesSeigManager
+);
+
+```
+
+### 18. DAOCommitteeOwner setQuorum
+```
+const MultiSigWalletContract = new ethers.Contract(
+    MultiSigWalletContractAddr,
+    MultiSigWallet_ABI.abi,
+    provider
+)
+
+const DAOCommitteeOwner = await ethers.Contract(
+  DAOCommitteeProxyAddr,
+  DAOCommittee_Owner_ABI.abi,
+  provider
+);
+
+const dataSetQuorum = DAOCommitteeOwner.interface.encodeFunctionData(
+    "setQuorum",
+    [1] // Set quorum (e.g. 1 person)
+)
+
+await MultiSigWalletContract.connect(owner).submitTransaction(
+    DAOCommitteeProxyAddr,
+    0,
+    dataSetQuorum
+);
+
+```
+
+### 19. DAOCommitteeOwner increaseMaxMember
+```
+const MultiSigWalletContract = new ethers.Contract(
+    MultiSigWalletContractAddr,
+    MultiSigWallet_ABI.abi,
+    provider
+)
+
+const DAOCommitteeOwner = await ethers.Contract(
+  DAOCommitteeProxyAddr,
+  DAOCommittee_Owner_ABI.abi,
+  provider
+);
+
+const dataIncreaseMaxMember = DAOCommitteeOwner.interface.encodeFunctionData(
+    "increaseMaxMember",
+    [5, 3] // New maximum number of members, quorum
+)
+
+await MultiSigWalletContract.connect(owner).submitTransaction(
+    DAOCommitteeProxyAddr,
+    0,
+    dataIncreaseMaxMember
+);
+
+```
+
+### 20. DAOCommitteeOwner decreaseMaxMember
+```
+const MultiSigWalletContract = new ethers.Contract(
+    MultiSigWalletContractAddr,
+    MultiSigWallet_ABI.abi,
+    provider
+)
+
+const DAOCommitteeOwner = await ethers.Contract(
+  DAOCommitteeProxyAddr,
+  DAOCommittee_Owner_ABI.abi,
+  provider
+);
+
+const dataDecreaseMaxMember = DAOCommitteeOwner.interface.encodeFunctionData(
+    "decreaseMaxMember",
+    [2, 1] // Reduce member index, new quorum
+)
+
+await MultiSigWalletContract.connect(owner).submitTransaction(
+    DAOCommitteeProxyAddr,
+    0,
+    dataDecreaseMaxMember
+);
+
+```
+
+### 21. DAOCommitteeOwner daoExecuteTransaction
+```
+const MultiSigWalletContract = new ethers.Contract(
+    MultiSigWalletContractAddr,
+    MultiSigWallet_ABI.abi,
+    provider
+)
+
+const DAOCommitteeOwner = await ethers.Contract(
+  DAOCommitteeProxyAddr,
+  DAOCommittee_Owner_ABI.abi,
+  provider
+);
+
+const targetAddress = "0x..."; // Contract address to execute
+const executeData = "0x..."; // Function data to be executed
+
+const dataDaoExecuteTransaction = DAOCommitteeOwner.interface.encodeFunctionData(
+    "daoExecuteTransaction",
+    [targetAddress, executeData]
+)
+
+await MultiSigWalletContract.connect(owner).submitTransaction(
+    DAOCommitteeProxyAddr,
+    0,
+    dataDaoExecuteTransaction
+);
+
+```
