@@ -5,3 +5,6 @@ module.exports = [
         '0xc1eba383D94c6021160042491A5dfaF1d82694E6'
     ],
 ];
+
+
+//npx hardhat verify --network <network> --constructor-args arguments.js <contract-address>
