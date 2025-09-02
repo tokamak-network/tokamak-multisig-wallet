@@ -8,9 +8,13 @@ require("@nomicfoundation/hardhat-verify");
 module.exports = {
   solidity: "0.8.27",
   networks: {
-    forking: {
-      url: `${process.env.ETH_NODE_URI_MAINNET}`,
-      blockNumber: 21077756
+    hardhat: {
+      forking: {
+        // url: `${process.env.ETH_NODE_URI_MAINNET}`,
+        // blockNumber: 21077756
+        url: `${process.env.ETH_NODE_URI_sepolia}`,
+        blockNumber: 8912424
+      },
     },
     mainnet: {
       url: `${process.env.ETH_NODE_URI_MAINNET}`,

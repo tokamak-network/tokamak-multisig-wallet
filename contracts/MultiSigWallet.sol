@@ -2,8 +2,18 @@
 pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+
+
+interface IERC1271 {
+    function isValidSignature(bytes32 hash, bytes memory signature)
+        external
+        view
+        returns (bytes4 magicValue);
+}
 
 contract MultiSigWallet {
+    using ECDSA for bytes32;
 
     /**
      * @notice Event that occurs when the submitTransaction function is executed
@@ -64,7 +74,13 @@ contract MultiSigWallet {
         uint indexed ownerIndex, 
         address indexed newOwner
     );
+    // EIP-1271 magic value
+    bytes4 constant internal MAGICVALUE = 0x1626ba7e;
 
+    mapping(bytes32 => uint256) public signatureCount;
+    mapping(bytes32 => mapping(address => bool)) public hasSignedHash;
+    
+    event SignatureAdded(bytes32 indexed hash, address indexed signer);
 
     //owners address
     address[] public owners;
@@ -142,6 +158,69 @@ contract MultiSigWallet {
 
     /// @notice This Contract can receive ETH.
     receive() external payable {}
+
+    // EIP-1271 implementation
+    function isValidSignature(bytes32 hash, bytes memory signature)
+        external
+        view
+        returns (bytes4)
+    {
+        return _isValidSignature(hash, signature) ? MAGICVALUE : bytes4(0);
+    }
+
+    function _isValidSignature(bytes32 hash, bytes memory signature)
+        internal
+        view
+        returns (bool)
+    {
+        // Check if we have enough signatures for this hash
+        if (signatureCount[hash] >= numConfirmationsRequired) {
+            return true;
+        }
+        
+        // Alternative: Validate individual signatures in the signature bytes
+        return _validateSignatures(hash, signature);
+    }
+
+    function _validateSignatures(bytes32 hash, bytes memory signature)
+        internal
+        view
+        returns (bool)
+    {
+        require(signature.length % 65 == 0, "Invalid signature length");
+        
+        uint256 validSignatures = 0;
+        address lastSigner = address(0);
+        
+        for (uint256 i = 0; i < signature.length; i += 65) {
+            bytes memory sig = new bytes(65);
+            for (uint256 j = 0; j < 65; j++) {
+                sig[j] = signature[i + j];
+            }
+            
+            address recovered = hash.recover(sig);
+            
+            require(recovered > lastSigner, "Signers not in order");
+            require(isOwner[recovered], "Not a valid signer");
+            
+            lastSigner = recovered;
+            validSignatures++;
+        }
+        
+        return validSignatures >= numConfirmationsRequired;
+    }
+    
+    // Function to add signature for a hash
+    function addSignature(bytes32 hash, bytes memory signature) external {
+        address signer = hash.recover(signature);
+        require(isOwner[signer], "Not a valid signer");
+        require(!hasSignedHash[hash][signer], "Already signed");
+        
+        hasSignedHash[hash][signer] = true;
+        signatureCount[hash]++;
+        
+        emit SignatureAdded(hash, signer);
+    }
 
     /// @notice This is a function that changes the owner.
     /// @param _index    Owner index to change
